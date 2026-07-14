@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 给露露宝宝的专属约会菜单</title>
+    <style>
+        :root {
+            --sakura-pink: #FFB7C5;
+            --sakura-deep: #FF9EAA;
+            --rose-gold: #E8B4B8;
+            --lavender: #E6E6FA;
+            --cream: #FFF9F5;
+            --warm-white: #FFFCFC;
+            --text-main: #5D4E6D;
+            --text-light: #8B7D9E;
+            --shadow-soft: 0 8px 32px rgba(255, 158, 170, 0.15);
+            --shadow-card: 0 4px 20px rgba(139, 125, 158, 0.08);
+            --radius: 24px;
+            --radius-sm: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFE4EC 50%, #FFF0F5 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #sakura-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(255, 158, 170, 0.2);
+        }
+
+        .header .heart-beat {
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10% { transform: scale(1.15); }
+            20% { transform: scale(1); }
+            30% { transform: scale(1.15); }
+            40% { transform: scale(1); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mode-switch {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .mode-option { position: relative; }
+
+        .mode-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+
+        .mode-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: var(--warm-white);
+            border: 2px solid var(--sakura-pink);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            box-shadow: var(--shadow-card);
+        }
+
+        .mode-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 158, 170, 0.25);
+        }
+
+        .mode-option input[type="radio"]:checked + .mode-label {
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-deep));
+            color: white;
+            border-color: var(--sakura-deep);
+            transform: scale(1.05);
+            box-shadow: 0 8px 28px rgba(255, 158, 170, 0.4);
+        }
+
+        .mode-emoji { font-size: 1.3rem; }
+
+        .mode-hint {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            min-height: 24px;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .mode-hint .highlight {
+            color: var(--sakura-deep);
+            font-weight: 600;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category-card {
+            background: var(--warm-white);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-soft);
+            animation: fadeInUp 0.8s ease both;
+            border: 1px solid rgba(255, 183, 197, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .category-card:nth-child(1) { animation-delay: 0.1s; }
+        .category-card:nth-child(2) { animation-delay: 0.2s; }
+        .category-card:nth-child(3) { animation-delay: 0.3s; }
+        .category-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed rgba(255, 183, 197, 0.3);
+        }
+
+        .category-icon { font-size: 1.6rem; }
+
+        .category-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 1px;
+        }
+
+        .category-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, var(--lavender), #F0E6FF);
+            color: var(--text-light);
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .option-item { position: relative; }
+
+        .option-item input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+
+        .option-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 14px 10px;
+            background: var(--cream);
+            border: 2px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 80px;
+            user-select: none;
+        }
+
+        .option-label:hover {
+            background: #FFF0F3;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 158, 170, 0.15);
+        }
+
+        .option-emoji {
+            font-size: 1.6rem;
+            transition: transform 0.3s ease;
+        }
+
+        .option-label:hover .option-emoji {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .option-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .option-price {
+            font-size: 0.75rem;
+            color: var(--sakura-deep);
+            font-weight: 700;
+        }
+
+        .option-item input[type="checkbox"]:checked + .option-label {
+            background: linear-gradient(135deg, #FFF0F3, #FFE4EC);
+            border-color: var(--sakura-pink);
+            box-shadow: 0 4px 16px rgba(255, 158, 170, 0.25);
+            transform: scale(1.03);
+        }
+
+        .option-item input[type="checkbox"]:checked + .option-label .option-emoji {
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .option-item.other-option.weekday-limit-hint .option-label {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease 0.5s both;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: var(--warm-white);
+            color: var(--text-light);
+            border: 2px solid var(--lavender);
+            box-shadow: var(--shadow-card);
+        }
+
+        .btn-secondary:hover {
+            background: var(--lavender);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 230, 250, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-deep));
+            color: white;
+            box-shadow: 0 8px 28px rgba(255, 158, 170, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before { left: 100%; }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 36px rgba(255, 158, 170, 0.5);
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        .ticket-section {
+            display: none;
+            margin-top: 20px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .ticket-section.show { display: block; }
+
+        .ticket-container {
+            perspective: 1000px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .ticket {
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFFCFC 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(139, 125, 158, 0.15), 0 0 0 1px rgba(255, 183, 197, 0.3);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: ticketFlip 1s ease;
+        }
+
+        @keyframes ticketFlip {
+            0% { transform: rotateX(-90deg); opacity: 0; }
+            100% { transform: rotateX(0); opacity: 1; }
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-deep));
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticket-header::before {
+            content: '✈';
+            position: absolute;
+            font-size: 8rem;
+            opacity: 0.1;
+            right: -20px;
+            top: -20px;
+            transform: rotate(-15deg);
+        }
+
+        .airline-name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+
+        .flight-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .flight-number {
+            background: rgba(255,255,255,0.25);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .route-arrow {
+            font-size: 1.5rem;
+            animation: fly 2s ease-in-out infinite;
+        }
+
+        @keyframes fly {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(8px); }
+        }
+
+        .ticket-perforation {
+            height: 24px;
+            background: var(--warm-white);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ticket-perforation::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            width: 24px; height: 24px;
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFE4EC 50%, #FFF0F5 100%);
+            border-radius: 50%;
+            box-shadow: inset -2px 0 4px rgba(0,0,0,0.05);
+        }
+
+        .ticket-perforation::after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            width: 24px; height: 24px;
+            background: linear-gradient(135deg, #FFF9F5 0%, #FFE4EC 50%, #FFF0F5 100%);
+            border-radius: 50%;
+            box-shadow: inset 2px 0 4px rgba(0,0,0,0.05);
+        }
+
+        .perforation-line {
+            width: 85%;
+            border-top: 2px dashed var(--sakura-pink);
+            opacity: 0.5;
+        }
+
+        .ticket-body {
+            padding: 28px;
+        }
+
+        .ticket-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .ticket-info-label {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .ticket-info-value {
+            color: var(--text-main);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .ticket-date {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .ticket-stops {
+            margin: 20px 0;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--cream), #FFF0F3);
+            border-radius: 16px;
+            border-left: 4px solid var(--sakura-pink);
+        }
+
+        .stops-title {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stops-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stop-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 14px;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255, 183, 197, 0.3);
+            animation: stopPop 0.4s ease both;
+        }
+
+        .stop-tag:nth-child(1) { animation-delay: 0.1s; }
+        .stop-tag:nth-child(2) { animation-delay: 0.2s; }
+        .stop-tag:nth-child(3) { animation-delay: 0.3s; }
+        .stop-tag:nth-child(4) { animation-delay: 0.4s; }
+        .stop-tag:nth-child(5) { animation-delay: 0.5s; }
+        .stop-tag:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes stopPop {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .stop-emoji { font-size: 1rem; }
+
+        .ticket-timeline {
+            margin: 24px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFF0F5, #FFFCFC);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 183, 197, 0.25);
+            position: relative;
+        }
+
+        .timeline-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 28px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--sakura-pink), var(--sakura-deep), var(--lavender));
+            border-radius: 3px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 18px;
+            animation: slideInLeft 0.5s ease both;
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--sakura-pink);
+            box-shadow: 0 0 0 3px rgba(255, 183, 197, 0.3);
+            z-index: 2;
+        }
+
+        .timeline-item:last-child { margin-bottom: 0; }
+
+        .timeline-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            color: var(--sakura-deep);
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: rgba(255, 183, 197, 0.15);
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .timeline-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .timeline-emoji {
+            font-size: 1.3rem;
+            animation: bounce 0.6s ease both;
+        }
+
+        .timeline-duration {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 2px;
+            margin-left: 32px;
+        }
+
+        .timeline-first .timeline-item::before {
+            border-color: var(--sakura-deep);
+            background: var(--sakura-pink);
+        }
+
+        .timeline-last .timeline-item::before {
+            border-color: var(--lavender);
+            background: var(--sakura-deep);
+        }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(255, 183, 197, 0.4);
+        }
+
+        .ticket-total {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--sakura-deep);
+        }
+
+        .ticket-total span { font-size: 1.4rem; }
+
+        .barcode {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 40px;
+            opacity: 0.6;
+        }
+
+        .barcode-line {
+            background: var(--text-main);
+            width: 3px;
+            border-radius: 1px;
+        }
+
+        .ticket-quote {
+            margin-top: 20px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--lavender), #F8F0FF);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 600;
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticket-quote::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 8px;
+            font-size: 3rem;
+            color: var(--sakura-pink);
+            opacity: 0.3;
+            font-family: Georgia, serif;
+        }
+
+        .ticket-quote::after {
+            content: '"';
+            position: absolute;
+            bottom: -20px;
+            right: 8px;
+            font-size: 3rem;
+            color: var(--sakura-pink);
+            opacity: 0.3;
+            font-family: Georgia, serif;
+        }
+
+        .toast-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(93, 78, 109, 0.3);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .toast-overlay.show { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .toast-box {
+            background: var(--warm-white);
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(139, 125, 158, 0.2);
+            border: 1px solid rgba(255, 183, 197, 0.3);
+            animation: toastPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes toastPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .toast-emoji {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .toast-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .toast-btn {
+            padding: 10px 32px;
+            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-deep));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.2s;
+        }
+
+        .toast-btn:hover { transform: scale(1.05); }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.5rem; }
+            .options-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .mode-label { padding: 10px 20px; font-size: 0.85rem; }
+            .action-bar { flex-direction: column; }
+            .ticket-body { padding: 20px; }
+            .ticket-header { padding: 18px; }
+            .timeline { padding-left: 24px; }
+        }
+
+        .shake { animation: shake 0.5s ease; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="sakura-canvas"></canvas>
+
+    <div class="container">
+        <header class="header">
+            <h1>给露露宝宝的专属约会菜单 <span class="heart-beat">💕</span></h1>
+        </header>
+
+        <div class="mode-switch">
+            <div class="mode-option">
+                <input type="radio" id="mode-weekday" name="mode" value="weekday" checked>
+                <label class="mode-label" for="mode-weekday">
+                    <span class="mode-emoji">💼</span>
+                    <span>工作日</span>
+                </label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="mode-weekend" name="mode" value="weekend">
+                <label class="mode-label" for="mode-weekend">
+                    <span class="mode-emoji">🌈</span>
+                    <span>周末</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mode-hint" id="mode-hint">
+            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动
+        </div>
+
+        <div class="category-card" data-category="food">
+            <div class="category-header">
+                <span class="category-icon">🍽️</span>
+                <h2 class="category-title">吃饭类</h2>
+                <span class="category-badge">10 恋爱币</span>
+            </div>
+            <div class="options-grid" id="food-options"></div>
+        </div>
+
+        <div class="category-card" data-category="movie">
+            <div class="category-header">
+                <span class="category-icon">🎬</span>
+                <h2 class="category-title">观影 / 观演类</h2>
+                <span class="category-badge">10 恋爱币</span>
+            </div>
+            <div class="options-grid" id="movie-options"></div>
+        </div>
+
+        <div class="category-card" data-category="romantic">
+            <div class="category-header">
+                <span class="category-icon">🌹</span>
+                <h2 class="category-title">浪漫活动类</h2>
+                <span class="category-badge">10 恋爱币</span>
+            </div>
+            <div class="options-grid" id="romantic-options"></div>
+        </div>
+
+        <div class="category-card" data-category="activity">
+            <div class="category-header">
+                <span class="category-icon">🎮</span>
+                <h2 class="category-title">两人活动类</h2>
+                <span class="category-badge">10 恋爱币</span>
+            </div>
+            <div class="options-grid" id="activity-options"></div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-secondary" id="btn-clear">
+                <span>🔄</span>
+                <span>清空重选</span>
+            </button>
+            <button class="btn btn-primary" id="btn-generate">
+                <span>✈️</span>
+                <span>生成今日约会行程</span>
+            </button>
+        </div>
+
+        <div class="ticket-section" id="ticket-section">
+            <div class="ticket-container">
+                <div class="ticket" id="ticket">
+                    <div class="ticket-header">
+                        <div class="airline-name">LOVE AIR航空</div>
+                        <div class="flight-info">
+                            <span>💕</span>
+                            <span class="flight-number">LOVE-520</span>
+                            <span class="route-arrow">✈️</span>
+                            <span>💕</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-perforation">
+                        <div class="perforation-line"></div>
+                    </div>
+                    
+                    <div class="ticket-body">
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">📅 航班日期</span>
+                            <span class="ticket-info-value ticket-date" id="ticket-date">--.--.--</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">🌙 约会模式</span>
+                            <span class="ticket-info-value" id="ticket-mode">工作日模式</span>
+                        </div>
+                        <div class="ticket-info-row">
+                            <span class="ticket-info-label">💑 乘客</span>
+                            <span class="ticket-info-value">露露 & 我 💕</span>
+                        </div>
+                        
+                        <div class="ticket-stops">
+                            <div class="stops-title">
+                                <span>🗺️</span>
+                                <span>今日航班途经站点</span>
+                            </div>
+                            <div class="stops-list" id="ticket-stops"></div>
+                        </div>
+                        
+                        <div class="ticket-timeline">
+                            <div class="timeline-title">
+                                <span>⏰</span>
+                                <span>行程安排</span>
+                            </div>
+                            <div class="timeline" id="ticket-timeline"></div>
+                        </div>
+                        
+                        <div class="ticket-footer">
+                            <div class="ticket-total">
+                                本次航班消费 <span id="ticket-total">0</span> 恋爱币
+                            </div>
+                            <div class="barcode" id="barcode"></div>
+                        </div>
+                        
+                        <div class="ticket-quote" id="ticket-quote"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-overlay" id="toast-overlay">
+        <div class="toast-box" id="toast-box">
+            <span class="toast-emoji" id="toast-emoji">💕</span>
+            <div class="toast-title" id="toast-title">提示</div>
+            <div class="toast-message" id="toast-message">消息内容</div>
+            <button class="toast-btn" id="toast-btn">知道啦 💕</button>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            food: [
+                { emoji: '🥟', name: '粤菜' },
+                { emoji: '🌶️', name: '川菜' },
+                { emoji: '🍣', name: '日料' },
+                { emoji: '🍜', name: '韩料' },
+                { emoji: '🍖', name: '烧烤' },
+                { emoji: '🥘', name: '东南亚菜' },
+                { emoji: '🍲', name: '特色菜' },
+                { emoji: '🥘', name: '火锅' },
+                { emoji: '🥩', name: '西餐/牛排' },
+                { emoji: '🍛', name: '茶餐厅' },
+                { emoji: '🍳', name: '亲手做家常菜' },
+                { emoji: '🍢', name: '夜市小吃' },
+                { emoji: '🍰', name: '甜品下午茶' },
+                { emoji: '🍷', name: '微醺Bistro' }
+            ],
+            movie: [
+                { emoji: '🧸', name: '动画片' },
+                { emoji: '😆', name: '喜剧片' },
+                { emoji: '👻', name: '恐怖片' },
+                { emoji: '💘', name: '爱情片' },
+                { emoji: '🔍', name: '悬疑片' },
+                { emoji: '🚀', name: '科幻片' },
+                { emoji: '🎞️', name: '经典老片' },
+                { emoji: '🎥', name: '私人影院/投影' },
+                { emoji: '🎭', name: '话剧/音乐剧' },
+                { emoji: '🎸', name: 'Livehouse' }
+            ],
+            romantic: [
+                { emoji: '🌊', name: '看海' },
+                { emoji: '🌬️', name: '吹海风' },
+                { emoji: '🚶', name: '散步' },
+                { emoji: '🛍️', name: '逛街' },
+                { emoji: '🌳', name: '逛公园' },
+                { emoji: '🌅', name: '看日落/晚霞' },
+                { emoji: '✨', name: '看夜景/星星' },
+                { emoji: '🚴', name: '双人骑行' },
+                { emoji: '📸', name: '拍大头贴/拍立得' },
+                { emoji: '💐', name: '买花/插花' },
+                { emoji: '🎡', name: '坐摩天轮' },
+                { emoji: '⛩️', name: '寺庙祈福' }
+            ],
+            activity: [
+                { emoji: '🧩', name: '拼豆' },
+                { emoji: '✂️', name: '做手工' },
+                { emoji: '🐱', name: '猫狗咖' },
+                { emoji: '🖼️', name: '看展览' },
+                { emoji: '📚', name: '书店' },
+                { emoji: '🍸', name: '清吧' },
+                { emoji: '🎢', name: '游乐场' },
+                { emoji: '🕹️', name: '电玩城' },
+                { emoji: '💆', name: '按摩' },
+                { emoji: '🧖', name: '水疗' },
+                { emoji: '🎮', name: '双人游戏' },
+                { emoji: '🧁', name: '一起烘焙' },
+                { emoji: '🛒', name: '超市大采购' },
+                { emoji: '🧱', name: '拼乐高' },
+                { emoji: '🎨', name: '互相画画/手帐' },
+                { emoji: '🔐', name: '密室/剧本杀' },
+                { emoji: '⛹️', name: '运动打球' }
+            ]
+        };
+
+        const durationMap = {
+            food: 90,
+            movie: 135,
+            romantic: 75,
+            activity: 90
+        };
+
+        const loveQuotes = [
+            "今天也是超级爱露露的一天 💕",
+            "和露露在一起的每分每秒都很甜 🍬",
+            "你是我宇宙限量版的快乐 ✨",
+            "余生漫漫，想和你浪费时光 ⏳",
+            "遇见你之后，再没羡慕过别人 🥰",
+            "你是我所有美好里的刚刚好 🌸",
+            "世界很大，幸好有你陪我逛 🌍",
+            "和露露吃饭，是每天最期待的事 🍽️",
+            "你是我平淡生活里的来日方长 📖",
+            "喜欢你，像风走了八千里 🌬️",
+            "你是我藏在星星里的浪漫 ⭐",
+            "有你在身边，风都变温柔了 🍃",
+            "你是我所有心动里的首选 💓",
+            "和你虚度时光，是我最想做的事 🌙",
+            "你是我绕过山河错落，才找到的人间烟火 🎆",
+            "恋爱这件小事，只想和露露做一辈子 💑",
+            "你是我疲惫生活中的英雄梦想 🦸",
+            "四季有你，胜过人间无数 🌸☀️🍂❄️"
+        ];
+
+        let currentMode = 'weekday';
+        const selectedItems = new Set();
+
+        const modeInputs = document.querySelectorAll('input[name="mode"]');
+        const modeHint = document.getElementById('mode-hint');
+        const btnClear = document.getElementById('btn-clear');
+        const btnGenerate = document.getElementById('btn-generate');
+        const ticketSection = document.getElementById('ticket-section');
+        const toastOverlay = document.getElementById('toast-overlay');
+        const toastBtn = document.getElementById('toast-btn');
+
+        function formatTime(minutes) {
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function getDurationText(minutes) {
+            if (minutes >= 60) {
+                const h = Math.floor(minutes / 60);
+                const m = minutes % 60;
+                return m > 0 ? `约 ${h} 小时 ${m} 分钟` : `约 ${h} 小时`;
+            }
+            return `约 ${minutes} 分钟`;
+        }
+
+        function generateSchedule(selectedArray) {
+            const sorted = [...selectedArray].sort((a, b) => {
+                const order = { food: 0, movie: 1, romantic: 2, activity: 3 };
+                return (order[a.category] || 99) - (order[b.category] || 99);
+            });
+
+            const startMinutes = currentMode === 'weekday' ? (18 * 60) : (14 * 60);
+            let currentTime = startMinutes;
+            const schedule = [];
+
+            sorted.forEach((item, index) => {
+                const duration = durationMap[item.category] || 60;
+                const start = currentTime;
+                const end = currentTime + duration;
+                
+                schedule.push({
+                    ...item,
+                    startTime: formatTime(start),
+                    endTime: formatTime(end),
+                    duration: duration,
+                    durationText: getDurationText(duration),
+                    isFirst: index === 0,
+                    isLast: index === sorted.length - 1
+                });
+
+                currentTime = end + 15;
+            });
+
+            return schedule;
+        }
+
+        function renderOptions() {
+            const containers = {
+                food: document.getElementById('food-options'),
+                movie: document.getElementById('movie-options'),
+                romantic: document.getElementById('romantic-options'),
+                activity: document.getElementById('activity-options')
+            };
+
+            Object.keys(data).forEach(category => {
+                const container = containers[category];
+                container.innerHTML = '';
+                
+                data[category].forEach((item, index) => {
+                    const id = `${category}-${index}`;
+                    const isOther = category !== 'food';
+                    
+                    const div = document.createElement('div');
+                    div.className = `option-item ${isOther ? 'other-option' : ''}`;
+                    div.innerHTML = `
+                        <input type="checkbox" id="${id}" value="${item.name}" data-category="${category}" data-emoji="${item.emoji}" data-name="${item.name}">
+                        <label class="option-label" for="${id}">
+                            <span class="option-emoji">${item.emoji}</span>
+                            <span class="option-text">${item.name}</span>
+                            <span class="option-price">10 币</span>
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        function updateModeHint() {
+            if (currentMode === 'weekday') {
+                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动';
+            } else {
+                modeHint.innerHTML = '周末模式：自由搭配，想选多少选多少！🌈 <span class="highlight">尽情享受吧</span>';
+            }
+        }
+
+        modeInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                currentMode = e.target.value;
+                updateModeHint();
+                updateWeekdayLimit();
+            });
+        });
+
+        function updateWeekdayLimit() {
+            const otherOptions = document.querySelectorAll('.other-option');
+            otherOptions.forEach(opt => {
+                const checkbox = opt.querySelector('input[type="checkbox"]');
+                if (currentMode === 'weekday') {
+                    const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
+                    if (otherSelected.length >= 3 && !checkbox.checked) {
+                        opt.classList.add('weekday-limit-hint');
+                    } else {
+                        opt.classList.remove('weekday-limit-hint');
+                    }
+                } else {
+                    opt.classList.remove('weekday-limit-hint');
+                }
+            });
+        }
+
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="checkbox"]')) {
+                const { category, emoji, name } = e.target.dataset;
+                const id = e.target.id;
+                
+                if (e.target.checked) {
+                    selectedItems.add(JSON.stringify({ category, emoji, name, id }));
+                } else {
+                    selectedItems.forEach(item => {
+                        const parsed = JSON.parse(item);
+                        if (parsed.id === id) selectedItems.delete(item);
+                    });
+                }
+                
+                updateWeekdayLimit();
+            }
+        });
+
+        function getSelectedByCategory(categories) {
+            const result = [];
+            selectedItems.forEach(item => {
+                const parsed = JSON.parse(item);
+                if (categories.includes(parsed.category)) result.push(parsed);
+            });
+            return result;
+        }
+
+        function getAllSelected() {
+            const result = [];
+            selectedItems.forEach(item => result.push(JSON.parse(item)));
+            return result;
+        }
+
+        function validateSelection() {
+            const foodSelected = getSelectedByCategory(['food']);
+            const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
+            const totalOther = otherSelected.length;
+
+            if (currentMode === 'weekday') {
+                if (foodSelected.length !== 1) {
+                    showToast('💝', '吃饭项目要选好哦', '工作日模式需要且只需要选择 <b>1个</b> 吃饭项目呢～');
+                    return false;
+                }
+                if (totalOther < 1 || totalOther > 3) {
+                    showToast('💕', '活动数量不对哦', '工作日模式需要选择 <b>1-3个</b> 其他活动项目，这样晚上时间才刚刚好～');
+                    return false;
+                }
+            } else {
+                if (foodSelected.length === 0 && totalOther === 0) {
+                    showToast('🥺', '还没有选任何项目呢', '至少选一项活动，才能生成我们的专属行程呀～');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function showToast(emoji, title, message) {
+            document.getElementById('toast-emoji').textContent = emoji;
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-message').innerHTML = message;
+            toastOverlay.classList.add('show');
+        }
+
+        toastBtn.addEventListener('click', () => {
+            toastOverlay.classList.remove('show');
+        });
+
+        toastOverlay.addEventListener('click', (e) => {
+            if (e.target === toastOverlay) toastOverlay.classList.remove('show');
+        });
+
+        btnClear.addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const cards = document.querySelectorAll('.category-card');
+            
+            cards.forEach((card, i) => {
+                setTimeout(() => {
+                    card.classList.add('shake');
+                    setTimeout(() => card.classList.remove('shake'), 500);
+                }, i * 100);
+            });
+
+            setTimeout(() => {
+                checkboxes.forEach(cb => cb.checked = false);
+                selectedItems.clear();
+                updateWeekdayLimit();
+                ticketSection.classList.remove('show');
+                showToast('🌸', '已清空啦', '重新开始规划我们甜甜的约会吧～');
+            }, 300);
+        });
+
+        btnGenerate.addEventListener('click', () => {
+            if (!validateSelection()) return;
+
+            const selected = getAllSelected();
+            const total = selected.length * 10;
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+            document.getElementById('ticket-date').textContent = dateStr;
+
+            document.getElementById('ticket-mode').textContent = currentMode === 'weekday' ? '工作日模式（晚上）' : '周末模式（全天）';
+
+            const stopsContainer = document.getElementById('ticket-stops');
+            stopsContainer.innerHTML = '';
+            selected.forEach((item, i) => {
+                const tag = document.createElement('span');
+                tag.className = 'stop-tag';
+                tag.style.animationDelay = `${i * 0.1}s`;
+                tag.innerHTML = `<span class="stop-emoji">${item.emoji || '💕'}</span> ${item.name || '神秘活动'}`;
+                stopsContainer.appendChild(tag);
+            });
+
+            const schedule = generateSchedule(selected);
+            const timelineContainer = document.getElementById('ticket-timeline');
+            timelineContainer.innerHTML = '';
+            
+            schedule.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                if (i === 0) div.classList.add('timeline-first');
+                if (i === schedule.length - 1) div.classList.add('timeline-last');
+                
+                div.innerHTML = `
+                    <div class="timeline-time">🕐 ${item.startTime} - ${item.endTime}</div>
+                    <div class="timeline-content">
+                        <span class="timeline-emoji">${item.emoji}</span>
+                        <span>${item.name}</span>
+                    </div>
+                    <div class="timeline-duration">⏳ ${item.durationText}</div>
+                `;
+                timelineContainer.appendChild(div);
+            });
+
+            document.getElementById('ticket-total').textContent = total;
+
+            const barcode = document.getElementById('barcode');
+            barcode.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const line = document.createElement('div');
+                line.className = 'barcode-line';
+                line.style.height = `${Math.random() * 30 + 10}px`;
+                barcode.appendChild(line);
+            }
+
+            const randomQuote = loveQuotes[Math.floor(Math.random() * loveQuotes.length)];
+            document.getElementById('ticket-quote').textContent = randomQuote;
+
+            ticketSection.classList.add('show');
+            
+            setTimeout(() => {
+                ticketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        });
+
+        const canvas = document.getElementById('sakura-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        const petals = [];
+        const PETAL_COUNT = 40;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Petal {
+            constructor() { this.reset(); }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * -height;
+                this.size = Math.random() * 8 + 4;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 2 - 1;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.sway = Math.random() * 0.02 + 0.01;
+                this.swayOffset = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += Math.sin(this.y * this.sway + this.swayOffset) * 0.5 + this.speedX;
+                this.rotation += this.rotationSpeed;
+                if (this.y > height + 20) this.reset();
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.globalAlpha = this.opacity;
+                
+                ctx.beginPath();
+                ctx.fillStyle = '#FFB7C5';
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-this.size/2, -this.size/2, -this.size, 0, 0, this.size);
+                ctx.bezierCurveTo(this.size, 0, this.size/2, -this.size/2, 0, 0);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.fillStyle = '#FFE4EC';
+                ctx.arc(0, 0, this.size * 0.15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < PETAL_COUNT; i++) {
+            const petal = new Petal();
+            petal.y = Math.random() * height;
+            petals.push(petal);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            petals.forEach(petal => { petal.update(); petal.draw(); });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        renderOptions();
+        updateModeHint();
+    </script>
+</body>
+</html>

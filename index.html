@@ -162,6 +162,23 @@
         .category-card:nth-child(2) { animation-delay: 0.2s; }
         .category-card:nth-child(3) { animation-delay: 0.3s; }
         .category-card:nth-child(4) { animation-delay: 0.4s; }
+        .category-card:nth-child(5) { animation-delay: 0.5s; }
+
+        .category-card[data-category="intimate"] {
+            border: 2px solid rgba(255, 158, 170, 0.45);
+            background: linear-gradient(135deg, #FFFCFC, #FFF5F7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card[data-category="intimate"]::before {
+            content: '🔒';
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 1.2rem;
+            opacity: 0.15;
+        }
 
         .category-header {
             display: flex;
@@ -871,10 +888,19 @@
             <div class="options-grid" id="activity-options"></div>
         </div>
 
+        <div class="category-card" data-category="intimate">
+            <div class="category-header">
+                <span class="category-icon">💕</span>
+                <h2 class="category-title">隐藏菜单</h2>
+                <span class="category-badge">私密 10 币</span>
+            </div>
+            <div class="options-grid" id="intimate-options"></div>
+        </div>
+
         <div class="action-bar">
             <button class="btn btn-secondary" id="btn-clear">
                 <span>🔄</span>
-                <span>清空重选</span>
+                <span>重新开始规划约会吧～</span>
             </button>
             <button class="btn btn-primary" id="btn-generate">
                 <span>✈️</span>
@@ -1014,6 +1040,18 @@
                 { emoji: '🎨', name: '互相画画/手帐' },
                 { emoji: '🔐', name: '密室/剧本杀' },
                 { emoji: '⛹️', name: '运动打球' }
+            ],
+            intimate: [
+                { emoji: '😘', name: '亲亲' },
+                { emoji: '🤗', name: '摸摸' },
+                { emoji: '🫂', name: '抱抱' },
+                { emoji: '🔥', name: 'W' },
+                { emoji: '🙌', name: '举高高' },
+                { emoji: '🥰', name: '贴贴' },
+                { emoji: '🫳', name: '揉揉头' },
+                { emoji: '👂', name: '咬耳朵' },
+                { emoji: '🤝', name: '牵手手' },
+                { emoji: '😽', name: '蹭蹭' }
             ]
         };
 
@@ -1021,7 +1059,8 @@
             food: 90,
             movie: 135,
             romantic: 75,
-            activity: 90
+            activity: 90,
+            intimate: 45
         };
 
         const loveQuotes = [
@@ -1073,7 +1112,11 @@
 
         function generateSchedule(selectedArray) {
             const sorted = [...selectedArray].sort((a, b) => {
-                const order = { food: 0, movie: 1, romantic: 2, activity: 3 };
+                // W 永远排在最后
+                if (a.name === 'W') return 1;
+                if (b.name === 'W') return -1;
+                // 其他按类别排序（intimate 整体放最后）
+                const order = { food: 0, movie: 1, romantic: 2, activity: 3, intimate: 4 };
                 return (order[a.category] || 99) - (order[b.category] || 99);
             });
 
@@ -1082,10 +1125,33 @@
             const schedule = [];
 
             sorted.forEach((item, index) => {
-                const duration = durationMap[item.category] || 60;
+                const isLast = index === sorted.length - 1;
+
+                // W 特殊处理：一整晚，放在最后
+                if (item.name === 'W') {
+                    schedule.push({
+                        ...item,
+                        startTime: formatTime(currentTime),
+                        endTime: '🌙 一整晚',
+                        duration: 0,
+                        durationText: '一整晚',
+                        isFirst: index === 0,
+                        isLast: isLast
+                    });
+                    return;
+                }
+
+                // 隐藏菜单其他项目（亲亲、摸摸等）固定 5 分钟
+                let duration;
+                if (item.category === 'intimate') {
+                    duration = 5;
+                } else {
+                    duration = durationMap[item.category] || 60;
+                }
+
                 const start = currentTime;
                 const end = currentTime + duration;
-                
+
                 schedule.push({
                     ...item,
                     startTime: formatTime(start),
@@ -1093,10 +1159,13 @@
                     duration: duration,
                     durationText: getDurationText(duration),
                     isFirst: index === 0,
-                    isLast: index === sorted.length - 1
+                    isLast: isLast
                 });
 
-                currentTime = end + 15;
+                // 不是最后一项才加 15 分钟缓冲
+                if (!isLast) {
+                    currentTime = end + 15;
+                }
             });
 
             return schedule;
@@ -1107,7 +1176,8 @@
                 food: document.getElementById('food-options'),
                 movie: document.getElementById('movie-options'),
                 romantic: document.getElementById('romantic-options'),
-                activity: document.getElementById('activity-options')
+                activity: document.getElementById('activity-options'),
+                intimate: document.getElementById('intimate-options')
             };
 
             Object.keys(data).forEach(category => {
@@ -1154,7 +1224,7 @@
             otherOptions.forEach(opt => {
                 const checkbox = opt.querySelector('input[type="checkbox"]');
                 if (currentMode === 'weekday') {
-                    const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
+                    const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity', 'intimate']);
                     if (otherSelected.length >= 3 && !checkbox.checked) {
                         opt.classList.add('weekday-limit-hint');
                     } else {
@@ -1201,7 +1271,7 @@
 
         function validateSelection() {
             const foodSelected = getSelectedByCategory(['food']);
-            const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
+            const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity', 'intimate']);
             const totalOther = otherSelected.length;
 
             if (currentMode === 'weekday') {
@@ -1253,7 +1323,7 @@
                 selectedItems.clear();
                 updateWeekdayLimit();
                 ticketSection.classList.remove('show');
-                showToast('🌸', '已清空啦', '重新开始规划约会吧～');
+                showToast('🌸', '已清空啦', '重新开始规划我们甜甜的约会吧～');
             }, 300);
         });
 

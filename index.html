@@ -849,7 +849,7 @@
         </div>
 
         <div class="mode-hint" id="mode-hint">
-            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动
+            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单不限）
         </div>
 
         <div class="category-card" data-category="food">
@@ -1112,10 +1112,8 @@
 
         function generateSchedule(selectedArray) {
             const sorted = [...selectedArray].sort((a, b) => {
-                // W 永远排在最后
                 if (a.name === 'W') return 1;
                 if (b.name === 'W') return -1;
-                // 其他按类别排序（intimate 整体放最后）
                 const order = { food: 0, movie: 1, romantic: 2, activity: 3, intimate: 4 };
                 return (order[a.category] || 99) - (order[b.category] || 99);
             });
@@ -1127,7 +1125,6 @@
             sorted.forEach((item, index) => {
                 const isLast = index === sorted.length - 1;
 
-                // W 特殊处理：一整晚，放在最后
                 if (item.name === 'W') {
                     schedule.push({
                         ...item,
@@ -1141,7 +1138,6 @@
                     return;
                 }
 
-                // 隐藏菜单其他项目（亲亲、摸摸等）固定 5 分钟
                 let duration;
                 if (item.category === 'intimate') {
                     duration = 5;
@@ -1162,7 +1158,6 @@
                     isLast: isLast
                 });
 
-                // 不是最后一项才加 15 分钟缓冲
                 if (!isLast) {
                     currentTime = end + 15;
                 }
@@ -1205,7 +1200,7 @@
 
         function updateModeHint() {
             if (currentMode === 'weekday') {
-                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动';
+                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单不限）';
             } else {
                 modeHint.innerHTML = '周末模式：自由搭配，想选多少选多少！🌈 <span class="highlight">尽情享受吧</span>';
             }
@@ -1223,8 +1218,15 @@
             const otherOptions = document.querySelectorAll('.other-option');
             otherOptions.forEach(opt => {
                 const checkbox = opt.querySelector('input[type="checkbox"]');
+                
+                // 隐藏菜单不受工作日数量限制
+                if (checkbox.dataset.category === 'intimate') {
+                    opt.classList.remove('weekday-limit-hint');
+                    return;
+                }
+                
                 if (currentMode === 'weekday') {
-                    const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity', 'intimate']);
+                    const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
                     if (otherSelected.length >= 3 && !checkbox.checked) {
                         opt.classList.add('weekday-limit-hint');
                     } else {
@@ -1271,7 +1273,8 @@
 
         function validateSelection() {
             const foodSelected = getSelectedByCategory(['food']);
-            const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity', 'intimate']);
+            // 隐藏菜单不计入工作日"其他活动"限制
+            const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
             const totalOther = otherSelected.length;
 
             if (currentMode === 'weekday') {
@@ -1280,11 +1283,13 @@
                     return false;
                 }
                 if (totalOther < 1 || totalOther > 3) {
-                    showToast('💕', '活动数量不对哦', '工作日模式需要选择 <b>1-3个</b> 其他活动项目，这样晚上时间才刚刚好～');
+                    showToast('💕', '活动数量不对哦', '工作日模式需要选择 <b>1-3个</b> 其他活动项目（隐藏菜单不限），这样晚上时间才刚刚好～');
                     return false;
                 }
             } else {
-                if (foodSelected.length === 0 && totalOther === 0) {
+                // 周末：至少选一项（任何类别都算）
+                const allSelected = getAllSelected();
+                if (allSelected.length === 0) {
                     showToast('🥺', '还没有选任何项目呢', '至少选一项活动，才能生成我们的专属行程呀～');
                     return false;
                 }

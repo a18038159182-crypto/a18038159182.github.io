@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💕 给露露宝宝的专属约会菜单</title>
+    <!-- 引入 html2canvas 用于截图 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --sakura-pink: #FFB7C5;
@@ -351,6 +353,68 @@
         }
 
         .btn-primary:active { transform: scale(0.98); }
+
+        /* ===== 分享按钮区域 ===== */
+        .share-bar {
+            display: none;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease both;
+        }
+
+        .share-bar.show {
+            display: flex;
+        }
+
+        .btn-share {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #A8E6CF, #88D8A3);
+            color: white;
+            box-shadow: 0 6px 20px rgba(136, 216, 163, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 28px rgba(136, 216, 163, 0.4);
+        }
+
+        .btn-link {
+            background: linear-gradient(135deg, #B4A7D6, #9B8FC7);
+            color: white;
+            box-shadow: 0 6px 20px rgba(155, 143, 199, 0.3);
+        }
+
+        .btn-link:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 28px rgba(155, 143, 199, 0.4);
+        }
+
+        .btn-native {
+            background: linear-gradient(135deg, #FFD3B6, #FFAAA5);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 170, 165, 0.3);
+        }
+
+        .btn-native:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 28px rgba(255, 170, 165, 0.4);
+        }
 
         .ticket-section {
             display: none;
@@ -801,11 +865,63 @@
 
         .toast-btn:hover { transform: scale(1.05); }
 
+        /* 截图预览弹窗 */
+        .preview-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(93, 78, 109, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-overlay.show { display: flex; }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: previewPop 0.4s ease;
+        }
+
+        @keyframes previewPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .preview-hint {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .preview-close {
+            padding: 12px 32px;
+            background: white;
+            color: var(--text-main);
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
         @media (max-width: 480px) {
             .header h1 { font-size: 1.5rem; }
             .options-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .mode-label { padding: 10px 20px; font-size: 0.85rem; }
             .action-bar { flex-direction: column; }
+            .share-bar { flex-direction: column; }
             .ticket-body { padding: 20px; }
             .ticket-header { padding: 18px; }
             .timeline { padding-left: 24px; }
@@ -908,6 +1024,22 @@
             </button>
         </div>
 
+        <!-- 分享按钮区域 -->
+        <div class="share-bar" id="share-bar">
+            <button class="btn-share btn-save" id="btn-save-img">
+                <span>📸</span>
+                <span>保存为图片</span>
+            </button>
+            <button class="btn-share btn-link" id="btn-copy-link">
+                <span>🔗</span>
+                <span>复制分享链接</span>
+            </button>
+            <button class="btn-share btn-native" id="btn-native-share" style="display: none;">
+                <span>📤</span>
+                <span>直接分享</span>
+            </button>
+        </div>
+
         <div class="ticket-section" id="ticket-section">
             <div class="ticket-container">
                 <div class="ticket" id="ticket">
@@ -967,6 +1099,13 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 截图预览弹窗 -->
+    <div class="preview-overlay" id="preview-overlay">
+        <img class="preview-img" id="preview-img" src="" alt="约会车票">
+        <div class="preview-hint">👆 长按图片保存到相册，然后发给露露宝宝～</div>
+        <button class="preview-close" id="preview-close">关闭</button>
     </div>
 
     <div class="toast-overlay" id="toast-overlay">
@@ -1092,8 +1231,17 @@
         const btnClear = document.getElementById('btn-clear');
         const btnGenerate = document.getElementById('btn-generate');
         const ticketSection = document.getElementById('ticket-section');
+        const shareBar = document.getElementById('share-bar');
         const toastOverlay = document.getElementById('toast-overlay');
         const toastBtn = document.getElementById('toast-btn');
+
+        // 分享相关按钮
+        const btnSaveImg = document.getElementById('btn-save-img');
+        const btnCopyLink = document.getElementById('btn-copy-link');
+        const btnNativeShare = document.getElementById('btn-native-share');
+        const previewOverlay = document.getElementById('preview-overlay');
+        const previewImg = document.getElementById('preview-img');
+        const previewClose = document.getElementById('preview-close');
 
         function formatTime(minutes) {
             const h = Math.floor(minutes / 60);
@@ -1219,7 +1367,6 @@
             otherOptions.forEach(opt => {
                 const checkbox = opt.querySelector('input[type="checkbox"]');
                 
-                // 隐藏菜单不受工作日数量限制
                 if (checkbox.dataset.category === 'intimate') {
                     opt.classList.remove('weekday-limit-hint');
                     return;
@@ -1273,7 +1420,6 @@
 
         function validateSelection() {
             const foodSelected = getSelectedByCategory(['food']);
-            // 隐藏菜单不计入工作日"其他活动"限制
             const otherSelected = getSelectedByCategory(['movie', 'romantic', 'activity']);
             const totalOther = otherSelected.length;
 
@@ -1287,7 +1433,6 @@
                     return false;
                 }
             } else {
-                // 周末：至少选一项（任何类别都算）
                 const allSelected = getAllSelected();
                 if (allSelected.length === 0) {
                     showToast('🥺', '还没有选任何项目呢', '至少选一项活动，才能生成我们的专属行程呀～');
@@ -1328,10 +1473,12 @@
                 selectedItems.clear();
                 updateWeekdayLimit();
                 ticketSection.classList.remove('show');
+                shareBar.classList.remove('show');
                 showToast('🌸', '已清空啦', '重新开始规划约会吧～');
             }, 300);
         });
 
+        // ===== 生成车票 =====
         btnGenerate.addEventListener('click', () => {
             if (!validateSelection()) return;
 
@@ -1390,11 +1537,144 @@
             document.getElementById('ticket-quote').textContent = randomQuote;
 
             ticketSection.classList.add('show');
+            shareBar.classList.add('show');
+
+            // 更新 URL 参数，方便分享链接
+            updateShareUrl();
             
             setTimeout(() => {
                 ticketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         });
+
+        // ===== 保存为图片 =====
+        btnSaveImg.addEventListener('click', async () => {
+            const ticket = document.getElementById('ticket');
+            
+            showToast('📸', '正在生成图片', '等等我，马上就好～');
+            
+            try {
+                const canvas = await html2canvas(ticket, {
+                    scale: 2,
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                previewImg.src = imgData;
+                previewOverlay.classList.add('show');
+                
+                // 同时创建一个下载链接（PC端直接下载）
+                const link = document.createElement('a');
+                link.download = `LOVE-520-露露的约会车票-${new Date().toISOString().slice(0,10)}.png`;
+                link.href = imgData;
+                link.click();
+                
+            } catch (err) {
+                showToast('😢', '生成失败', '重试一次，或者截图保存吧～');
+                console.error(err);
+            }
+        });
+
+        previewClose.addEventListener('click', () => {
+            previewOverlay.classList.remove('show');
+        });
+
+        previewOverlay.addEventListener('click', (e) => {
+            if (e.target === previewOverlay) previewOverlay.classList.remove('show');
+        });
+
+        // ===== 复制分享链接 =====
+        function updateShareUrl() {
+            const selected = getAllSelected();
+            const params = new URLSearchParams();
+            params.set('mode', currentMode);
+            params.set('items', selected.map(s => s.id).join(','));
+            
+            const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        btnCopyLink.addEventListener('click', () => {
+            const selected = getAllSelected();
+            const params = new URLSearchParams();
+            params.set('mode', currentMode);
+            params.set('items', selected.map(s => s.id).join(','));
+            
+            const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('🔗', '链接已复制', '快分享链接吧～打开链接就能看到同样的约会车票！');
+            }).catch(() => {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = shareUrl;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('🔗', '链接已复制', '快分享链接吧～打开链接就能看到同样的约会车票！');
+            });
+        });
+
+        // ===== 检测是否支持原生分享 =====
+        if (navigator.share) {
+            btnNativeShare.style.display = 'flex';
+            btnNativeShare.addEventListener('click', async () => {
+                const ticket = document.getElementById('ticket');
+                try {
+                    const canvas = await html2canvas(ticket, { scale: 2, backgroundColor: null, useCORS: true });
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], 'love-ticket.png', { type: 'image/png' });
+                        await navigator.share({
+                            title: '给露露宝宝的专属约会车票 💕',
+                            text: 'LOVE-520 航班已出票，快来查收我们的约会行程吧～',
+                            files: [file]
+                        });
+                    });
+                } catch (err) {
+                    showToast('😢', '分享失败', '请使用「保存为图片」或「复制链接」吧～');
+                }
+            });
+        }
+
+        // ===== 页面加载时检查 URL 参数（通过链接打开时自动恢复） =====
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const mode = params.get('mode');
+            const items = params.get('items');
+            
+            if (mode && items) {
+                // 设置模式
+                if (mode === 'weekend') {
+                    document.getElementById('mode-weekend').checked = true;
+                    currentMode = 'weekend';
+                } else {
+                    document.getElementById('mode-weekday').checked = true;
+                    currentMode = 'weekday';
+                }
+                updateModeHint();
+                
+                // 恢复选中项
+                const itemIds = items.split(',');
+                itemIds.forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        const { category, emoji, name } = checkbox.dataset;
+                        selectedItems.add(JSON.stringify({ category, emoji, name, id }));
+                    }
+                });
+                
+                updateWeekdayLimit();
+                
+                // 自动触发生成
+                setTimeout(() => {
+                    btnGenerate.click();
+                }, 500);
+            }
+        }
 
         const canvas = document.getElementById('sakura-canvas');
         const ctx = canvas.getContext('2d');
@@ -1472,6 +1752,9 @@
 
         renderOptions();
         updateModeHint();
+        
+        // 页面加载完检查是否有分享链接参数
+        window.addEventListener('load', loadFromUrl);
     </script>
 </body>
 </html>

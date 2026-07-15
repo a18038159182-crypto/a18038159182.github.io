@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💕 给露露宝宝的专属约会菜单</title>
-    <!-- 引入 html2canvas 用于截图 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
     <style>
         :root {
             --sakura-pink: #FFB7C5;
@@ -354,7 +353,6 @@
 
         .btn-primary:active { transform: scale(0.98); }
 
-        /* ===== 分享按钮区域 ===== */
         .share-bar {
             display: none;
             gap: 12px;
@@ -865,7 +863,6 @@
 
         .toast-btn:hover { transform: scale(1.05); }
 
-        /* 截图预览弹窗 */
         .preview-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -889,6 +886,7 @@
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.2);
             animation: previewPop 0.4s ease;
+            background: white;
         }
 
         @keyframes previewPop {
@@ -1024,7 +1022,6 @@
             </button>
         </div>
 
-        <!-- 分享按钮区域 -->
         <div class="share-bar" id="share-bar">
             <button class="btn-share btn-save" id="btn-save-img">
                 <span>📸</span>
@@ -1101,7 +1098,6 @@
         </div>
     </div>
 
-    <!-- 截图预览弹窗 -->
     <div class="preview-overlay" id="preview-overlay">
         <img class="preview-img" id="preview-img" src="" alt="约会车票">
         <div class="preview-hint">👆 长按图片保存到相册，然后发给露露宝宝～</div>
@@ -1235,7 +1231,6 @@
         const toastOverlay = document.getElementById('toast-overlay');
         const toastBtn = document.getElementById('toast-btn');
 
-        // 分享相关按钮
         const btnSaveImg = document.getElementById('btn-save-img');
         const btnCopyLink = document.getElementById('btn-copy-link');
         const btnNativeShare = document.getElementById('btn-native-share');
@@ -1243,10 +1238,17 @@
         const previewImg = document.getElementById('preview-img');
         const previewClose = document.getElementById('preview-close');
 
+        // ===== 修正：时间格式化，超过24小时显示"次日" =====
         function formatTime(minutes) {
-            const h = Math.floor(minutes / 60);
-            const m = minutes % 60;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            const days = Math.floor(minutes / (24 * 60));
+            const remaining = minutes % (24 * 60);
+            const h = Math.floor(remaining / 60);
+            const m = remaining % 60;
+            const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            if (days > 0) {
+                return `次日 ${timeStr}`;
+            }
+            return timeStr;
         }
 
         function getDurationText(minutes) {
@@ -1258,12 +1260,30 @@
             return `约 ${minutes} 分钟`;
         }
 
+        // ===== 修正：严格排序逻辑 =====
         function generateSchedule(selectedArray) {
+            // 显式定义优先级：吃饭 > 观影/浪漫/活动 > 隐藏菜单 > W
+            const priority = {
+                'food': 0,
+                'movie': 1,
+                'romantic': 2,
+                'activity': 3,
+                'intimate': 4
+            };
+
             const sorted = [...selectedArray].sort((a, b) => {
+                // W 永远排最后
                 if (a.name === 'W') return 1;
                 if (b.name === 'W') return -1;
-                const order = { food: 0, movie: 1, romantic: 2, activity: 3, intimate: 4 };
-                return (order[a.category] || 99) - (order[b.category] || 99);
+                
+                // 按类别优先级排序
+                const pa = priority[a.category] !== undefined ? priority[a.category] : 99;
+                const pb = priority[b.category] !== undefined ? priority[b.category] : 99;
+                
+                if (pa !== pb) return pa - pb;
+                
+                // 同类别保持原始选择顺序
+                return 0;
             });
 
             const startMinutes = currentMode === 'weekday' ? (18 * 60) : (14 * 60);
@@ -1273,6 +1293,7 @@
             sorted.forEach((item, index) => {
                 const isLast = index === sorted.length - 1;
 
+                // W 特殊处理：一整晚，永远最后
                 if (item.name === 'W') {
                     schedule.push({
                         ...item,
@@ -1286,6 +1307,7 @@
                     return;
                 }
 
+                // 隐藏菜单其他项目（亲亲、摸摸等）固定 5 分钟
                 let duration;
                 if (item.category === 'intimate') {
                     duration = 5;
@@ -1306,6 +1328,7 @@
                     isLast: isLast
                 });
 
+                // 不是最后一项才加 15 分钟缓冲
                 if (!isLast) {
                     currentTime = end + 15;
                 }
@@ -1478,7 +1501,6 @@
             }, 300);
         });
 
-        // ===== 生成车票 =====
         btnGenerate.addEventListener('click', () => {
             if (!validateSelection()) return;
 
@@ -1539,7 +1561,6 @@
             ticketSection.classList.add('show');
             shareBar.classList.add('show');
 
-            // 更新 URL 参数，方便分享链接
             updateShareUrl();
             
             setTimeout(() => {
@@ -1547,33 +1568,33 @@
             }, 100);
         });
 
-        // ===== 保存为图片 =====
         btnSaveImg.addEventListener('click', async () => {
+            if (typeof htmlToImage === 'undefined') {
+                showToast('😢', '图片库加载中', '请刷新页面后再试，或者先截图保存吧～');
+                return;
+            }
+
             const ticket = document.getElementById('ticket');
-            
-            showToast('📸', '正在生成图片', '等等我，马上就好～');
-            
+            showToast('📸', '正在生成图片', '请稍等，马上就好～');
+
             try {
-                const canvas = await html2canvas(ticket, {
-                    scale: 2,
-                    backgroundColor: null,
-                    useCORS: true,
-                    logging: false
+                const dataUrl = await htmlToImage.toPng(ticket, {
+                    quality: 1.0,
+                    pixelRatio: 2,
+                    backgroundColor: '#FFFCFC'
                 });
-                
-                const imgData = canvas.toDataURL('image/png');
-                previewImg.src = imgData;
+
+                previewImg.src = dataUrl;
                 previewOverlay.classList.add('show');
-                
-                // 同时创建一个下载链接（PC端直接下载）
+
                 const link = document.createElement('a');
                 link.download = `LOVE-520-露露的约会车票-${new Date().toISOString().slice(0,10)}.png`;
-                link.href = imgData;
+                link.href = dataUrl;
                 link.click();
-                
+
             } catch (err) {
-                showToast('😢', '生成失败', '重试一次，或者截图保存吧～');
                 console.error(err);
+                showToast('😢', '生成失败', '请直接截图保存吧，效果一样好看～');
             }
         });
 
@@ -1585,7 +1606,6 @@
             if (e.target === previewOverlay) previewOverlay.classList.remove('show');
         });
 
-        // ===== 复制分享链接 =====
         function updateShareUrl() {
             const selected = getAllSelected();
             const params = new URLSearchParams();
@@ -1607,7 +1627,6 @@
             navigator.clipboard.writeText(shareUrl).then(() => {
                 showToast('🔗', '链接已复制', '快分享链接吧～打开链接就能看到同样的约会车票！');
             }).catch(() => {
-                // 降级方案
                 const textarea = document.createElement('textarea');
                 textarea.value = shareUrl;
                 document.body.appendChild(textarea);
@@ -1618,35 +1637,45 @@
             });
         });
 
-        // ===== 检测是否支持原生分享 =====
         if (navigator.share) {
             btnNativeShare.style.display = 'flex';
             btnNativeShare.addEventListener('click', async () => {
+                if (typeof htmlToImage === 'undefined') {
+                    showToast('😢', '图片库加载中', '请刷新页面后再试～');
+                    return;
+                }
+
                 const ticket = document.getElementById('ticket');
                 try {
-                    const canvas = await html2canvas(ticket, { scale: 2, backgroundColor: null, useCORS: true });
-                    canvas.toBlob(async (blob) => {
-                        const file = new File([blob], 'love-ticket.png', { type: 'image/png' });
-                        await navigator.share({
-                            title: '给露露宝宝的专属约会车票 💕',
-                            text: 'LOVE-520 航班已出票，快来查收我们的约会行程吧～',
-                            files: [file]
-                        });
+                    const dataUrl = await htmlToImage.toPng(ticket, {
+                        quality: 1.0,
+                        pixelRatio: 2,
+                        backgroundColor: '#FFFCFC'
+                    });
+
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], 'love-ticket.png', { type: 'image/png' });
+
+                    await navigator.share({
+                        title: '给露露宝宝的专属约会车票 💕',
+                        text: 'LOVE-520 航班已出票，快来查收我们的约会行程吧～',
+                        files: [file]
                     });
                 } catch (err) {
-                    showToast('😢', '分享失败', '请使用「保存为图片」或「复制链接」吧～');
+                    if (err.name !== 'AbortError') {
+                        showToast('😢', '分享失败', '请用「保存为图片」或「复制链接」吧～');
+                    }
                 }
             });
         }
 
-        // ===== 页面加载时检查 URL 参数（通过链接打开时自动恢复） =====
         function loadFromUrl() {
             const params = new URLSearchParams(window.location.search);
             const mode = params.get('mode');
             const items = params.get('items');
             
             if (mode && items) {
-                // 设置模式
                 if (mode === 'weekend') {
                     document.getElementById('mode-weekend').checked = true;
                     currentMode = 'weekend';
@@ -1656,7 +1685,6 @@
                 }
                 updateModeHint();
                 
-                // 恢复选中项
                 const itemIds = items.split(',');
                 itemIds.forEach(id => {
                     const checkbox = document.getElementById(id);
@@ -1669,7 +1697,6 @@
                 
                 updateWeekdayLimit();
                 
-                // 自动触发生成
                 setTimeout(() => {
                     btnGenerate.click();
                 }, 500);
@@ -1753,7 +1780,6 @@
         renderOptions();
         updateModeHint();
         
-        // 页面加载完检查是否有分享链接参数
         window.addEventListener('load', loadFromUrl);
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💕 给Carlin的专属约会菜单</title>
+    <title>💕 给露露宝宝的专属约会菜单</title>
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
     <style>
         :root {
@@ -157,6 +157,7 @@
             animation: fadeInUp 0.8s ease both;
             border: 1px solid rgba(255, 183, 197, 0.2);
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
         .category-card:nth-child(1) { animation-delay: 0.1s; }
@@ -164,16 +165,32 @@
         .category-card:nth-child(3) { animation-delay: 0.3s; }
         .category-card:nth-child(4) { animation-delay: 0.4s; }
         .category-card:nth-child(5) { animation-delay: 0.5s; }
+        .category-card:nth-child(6) { animation-delay: 0.6s; }
 
         .category-card[data-category="intimate"] {
             border: 2px solid rgba(255, 158, 170, 0.45);
             background: linear-gradient(135deg, #FFFCFC, #FFF5F7);
-            position: relative;
             overflow: hidden;
         }
 
         .category-card[data-category="intimate"]::before {
             content: '🔒';
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 1.2rem;
+            opacity: 0.15;
+        }
+
+        /* 穿搭卡片特殊样式 */
+        .category-card[data-category="outfit"] {
+            border: 2px solid rgba(200, 180, 220, 0.4);
+            background: linear-gradient(135deg, #FFFCFC, #FAF5FF);
+            overflow: hidden;
+        }
+
+        .category-card[data-category="outfit"]::before {
+            content: '👗';
             position: absolute;
             top: 12px;
             right: 16px;
@@ -724,6 +741,47 @@
             background: var(--sakura-deep);
         }
 
+        /* ===== 新增：OOTD 穿搭区域 ===== */
+        .ticket-ootd {
+            margin: 20px 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #FAF5FF, #FFF5F8);
+            border-radius: 16px;
+            border: 1px solid rgba(200, 180, 220, 0.25);
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .ootd-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ootd-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .ootd-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid rgba(200, 180, 220, 0.3);
+            animation: stopPop 0.4s ease both;
+        }
+
         .ticket-footer {
             display: flex;
             justify-content: space-between;
@@ -942,7 +1000,7 @@
 
     <div class="container">
         <header class="header">
-            <h1>给Carlin的专属约会菜单 <span class="heart-beat">💕</span></h1>
+            <h1>给露露宝宝的专属约会菜单 <span class="heart-beat">💕</span></h1>
         </header>
 
         <div class="mode-switch">
@@ -963,7 +1021,7 @@
         </div>
 
         <div class="mode-hint" id="mode-hint">
-            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单不限）
+            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单&穿搭不限）
         </div>
 
         <div class="category-card" data-category="food">
@@ -1009,6 +1067,16 @@
                 <span class="category-badge">私密 10 币</span>
             </div>
             <div class="options-grid" id="intimate-options"></div>
+        </div>
+
+        <!-- 新增：约会穿搭 -->
+        <div class="category-card" data-category="outfit">
+            <div class="category-header">
+                <span class="category-icon">👗</span>
+                <h2 class="category-title">约会穿搭</h2>
+                <span class="category-badge">免费</span>
+            </div>
+            <div class="options-grid" id="outfit-options"></div>
         </div>
 
         <div class="action-bar">
@@ -1082,6 +1150,15 @@
                                 <span>行程安排</span>
                             </div>
                             <div class="timeline" id="ticket-timeline"></div>
+                        </div>
+                        
+                        <!-- 新增：OOTD 穿搭区域 -->
+                        <div class="ticket-ootd" id="ticket-ootd" style="display: none;">
+                            <div class="ootd-title">
+                                <span>👗</span>
+                                <span>露露今日穿搭</span>
+                            </div>
+                            <div class="ootd-list" id="ootd-list"></div>
                         </div>
                         
                         <div class="ticket-footer">
@@ -1187,6 +1264,24 @@
                 { emoji: '🤝', name: '牵手手' },
                 { emoji: '😽', name: '蹭蹭' },
                 { emoji: '🔥', name: 'W' }
+            ],
+            outfit: [
+                { emoji: '👕', name: 'T恤' },
+                { emoji: '👔', name: '衬衫' },
+                { emoji: '🧶', name: '吊带' },
+                { emoji: '🧥', name: '卫衣' },
+                { emoji: '💎', name: '小香风外套' },
+                { emoji: '🧣', name: '针织开衫' },
+                { emoji: '👗', name: '一字肩' },
+                { emoji: '✨', name: '露脐装' },
+                { emoji: '🩳', name: '短裤' },
+                { emoji: '👖', name: '长裤' },
+                { emoji: '👗', name: '短裙' },
+                { emoji: '👗', name: '长裙' },
+                { emoji: '🎀', name: '百褶裙' },
+                { emoji: '👖', name: '牛仔裤' },
+                { emoji: '🩴', name: '阔腿裤' },
+                { emoji: '💃', name: '包臀裙' }
             ]
         };
 
@@ -1238,7 +1333,6 @@
         const previewImg = document.getElementById('preview-img');
         const previewClose = document.getElementById('preview-close');
 
-        // ===== 修正：时间格式化，超过24小时显示"次日" =====
         function formatTime(minutes) {
             const days = Math.floor(minutes / (24 * 60));
             const remaining = minutes % (24 * 60);
@@ -1260,9 +1354,7 @@
             return `约 ${minutes} 分钟`;
         }
 
-        // ===== 修正：严格排序逻辑 =====
         function generateSchedule(selectedArray) {
-            // 显式定义优先级：吃饭 > 观影/浪漫/活动 > 隐藏菜单 > W
             const priority = {
                 'food': 0,
                 'movie': 1,
@@ -1272,17 +1364,13 @@
             };
 
             const sorted = [...selectedArray].sort((a, b) => {
-                // W 永远排最后
                 if (a.name === 'W') return 1;
                 if (b.name === 'W') return -1;
                 
-                // 按类别优先级排序
                 const pa = priority[a.category] !== undefined ? priority[a.category] : 99;
                 const pb = priority[b.category] !== undefined ? priority[b.category] : 99;
                 
                 if (pa !== pb) return pa - pb;
-                
-                // 同类别保持原始选择顺序
                 return 0;
             });
 
@@ -1293,7 +1381,6 @@
             sorted.forEach((item, index) => {
                 const isLast = index === sorted.length - 1;
 
-                // W 特殊处理：一整晚，永远最后
                 if (item.name === 'W') {
                     schedule.push({
                         ...item,
@@ -1307,7 +1394,6 @@
                     return;
                 }
 
-                // 隐藏菜单其他项目（亲亲、摸摸等）固定 5 分钟
                 let duration;
                 if (item.category === 'intimate') {
                     duration = 5;
@@ -1328,7 +1414,6 @@
                     isLast: isLast
                 });
 
-                // 不是最后一项才加 15 分钟缓冲
                 if (!isLast) {
                     currentTime = end + 15;
                 }
@@ -1343,7 +1428,8 @@
                 movie: document.getElementById('movie-options'),
                 romantic: document.getElementById('romantic-options'),
                 activity: document.getElementById('activity-options'),
-                intimate: document.getElementById('intimate-options')
+                intimate: document.getElementById('intimate-options'),
+                outfit: document.getElementById('outfit-options')
             };
 
             Object.keys(data).forEach(category => {
@@ -1352,7 +1438,7 @@
                 
                 data[category].forEach((item, index) => {
                     const id = `${category}-${index}`;
-                    const isOther = category !== 'food';
+                    const isOther = category !== 'food' && category !== 'outfit';
                     
                     const div = document.createElement('div');
                     div.className = `option-item ${isOther ? 'other-option' : ''}`;
@@ -1361,7 +1447,7 @@
                         <label class="option-label" for="${id}">
                             <span class="option-emoji">${item.emoji}</span>
                             <span class="option-text">${item.name}</span>
-                            <span class="option-price">10 币</span>
+                            <span class="option-price">${category === 'outfit' ? '免费' : '10 币'}</span>
                         </label>
                     `;
                     container.appendChild(div);
@@ -1371,7 +1457,7 @@
 
         function updateModeHint() {
             if (currentMode === 'weekday') {
-                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单不限）';
+                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单&穿搭不限）';
             } else {
                 modeHint.innerHTML = '周末模式：自由搭配，想选多少选多少！🌈 <span class="highlight">尽情享受吧</span>';
             }
@@ -1389,8 +1475,9 @@
             const otherOptions = document.querySelectorAll('.other-option');
             otherOptions.forEach(opt => {
                 const checkbox = opt.querySelector('input[type="checkbox"]');
+                const cat = checkbox.dataset.category;
                 
-                if (checkbox.dataset.category === 'intimate') {
+                if (cat === 'intimate' || cat === 'outfit') {
                     opt.classList.remove('weekday-limit-hint');
                     return;
                 }
@@ -1452,12 +1539,13 @@
                     return false;
                 }
                 if (totalOther < 1 || totalOther > 3) {
-                    showToast('💕', '活动数量不对哦', '工作日模式需要选择 <b>1-3个</b> 其他活动项目（隐藏菜单不限），这样晚上时间才刚刚好～');
+                    showToast('💕', '活动数量不对哦', '工作日模式需要选择 <b>1-3个</b> 其他活动项目（隐藏菜单&穿搭不限），这样晚上时间才刚刚好～');
                     return false;
                 }
             } else {
                 const allSelected = getAllSelected();
-                if (allSelected.length === 0) {
+                const nonOutfit = allSelected.filter(s => s.category !== 'outfit');
+                if (nonOutfit.length === 0) {
                     showToast('🥺', '还没有选任何项目呢', '至少选一项活动，才能生成我们的专属行程呀～');
                     return false;
                 }
@@ -1505,7 +1593,9 @@
             if (!validateSelection()) return;
 
             const selected = getAllSelected();
-            const total = selected.length * 10;
+            // 总价只计算非穿搭项目
+            const paidItems = selected.filter(s => s.category !== 'outfit');
+            const total = paidItems.length * 10;
 
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
@@ -1513,9 +1603,10 @@
 
             document.getElementById('ticket-mode').textContent = currentMode === 'weekday' ? '工作日模式（晚上）' : '周末模式（全天）';
 
+            // 途经站点（不含穿搭）
             const stopsContainer = document.getElementById('ticket-stops');
             stopsContainer.innerHTML = '';
-            selected.forEach((item, i) => {
+            paidItems.forEach((item, i) => {
                 const tag = document.createElement('span');
                 tag.className = 'stop-tag';
                 tag.style.animationDelay = `${i * 0.1}s`;
@@ -1523,7 +1614,9 @@
                 stopsContainer.appendChild(tag);
             });
 
-            const schedule = generateSchedule(selected);
+            // 时间轴（不含穿搭）
+            const scheduleItems = paidItems;
+            const schedule = generateSchedule(scheduleItems);
             const timelineContainer = document.getElementById('ticket-timeline');
             timelineContainer.innerHTML = '';
             
@@ -1543,6 +1636,26 @@
                 `;
                 timelineContainer.appendChild(div);
             });
+
+            // OOTD 穿搭区域
+            const outfitItems = selected.filter(s => s.category === 'outfit');
+            const ootdSection = document.getElementById('ticket-ootd');
+            const ootdList = document.getElementById('ootd-list');
+            
+            if (outfitItems.length > 0) {
+                ootdSection.style.display = 'block';
+                ootdList.innerHTML = '';
+                outfitItems.forEach((item, i) => {
+                    const tag = document.createElement('span');
+                    tag.className = 'ootd-tag';
+                    tag.style.animationDelay = `${i * 0.1}s`;
+                    tag.innerHTML = `<span>${item.emoji}</span> ${item.name}`;
+                    ootdList.appendChild(tag);
+                });
+            } else {
+                ootdSection.style.display = 'none';
+                ootdList.innerHTML = '';
+            }
 
             document.getElementById('ticket-total').textContent = total;
 
@@ -1664,7 +1777,7 @@
                     });
                 } catch (err) {
                     if (err.name !== 'AbortError') {
-                        showToast('😢', '分享失败', '请用「保存为图片」或「复制链接」吧～');
+                        showToast('😢', '分享失败', '请使用「保存为图片」或「复制链接」吧～');
                     }
                 }
             });

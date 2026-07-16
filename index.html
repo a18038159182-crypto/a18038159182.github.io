@@ -88,6 +88,8 @@
             gap: 16px;
             margin-bottom: 32px;
             animation: fadeInUp 0.8s ease 0.2s both;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .mode-option { position: relative; }
@@ -117,14 +119,6 @@
         .mode-label:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 24px rgba(255, 158, 170, 0.25);
-        }
-
-        .mode-option input[type="radio"]:checked + .mode-label {
-            background: linear-gradient(135deg, var(--sakura-pink), var(--sakura-deep));
-            color: white;
-            border-color: var(--sakura-deep);
-            transform: scale(1.05);
-            box-shadow: 0 8px 28px rgba(255, 158, 170, 0.4);
         }
 
         .mode-emoji { font-size: 1.3rem; }
@@ -176,13 +170,11 @@
         .category-card[data-category="intimate"]::before {
             content: '🔒';
             position: absolute;
-            top: 12px;
-            right: 16px;
+            top: 12px; right: 16px;
             font-size: 1.2rem;
             opacity: 0.15;
         }
 
-        /* 穿搭卡片特殊样式 */
         .category-card[data-category="outfit"] {
             border: 2px solid rgba(200, 180, 220, 0.4);
             background: linear-gradient(135deg, #FFFCFC, #FAF5FF);
@@ -192,8 +184,7 @@
         .category-card[data-category="outfit"]::before {
             content: '👗';
             position: absolute;
-            top: 12px;
-            right: 16px;
+            top: 12px; right: 16px;
             font-size: 1.2rem;
             opacity: 0.15;
         }
@@ -741,7 +732,6 @@
             background: var(--sakura-deep);
         }
 
-        /* ===== 新增：OOTD 穿搭区域 ===== */
         .ticket-ootd {
             margin: 20px 0;
             padding: 16px;
@@ -992,6 +982,34 @@
             60% { transform: translateX(-4px); }
             80% { transform: translateX(4px); }
         }
+
+        /* 日期选择器下拉样式 */
+        #date-picker {
+            padding: 12px 20px;
+            border: 2px solid var(--sakura-pink);
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: var(--warm-white);
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            box-shadow: var(--shadow-card);
+            min-width: 200px;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23FF9EAA' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        #date-picker:focus {
+            border-color: var(--sakura-deep);
+            box-shadow: 0 0 0 3px rgba(255, 158, 170, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -1005,23 +1023,20 @@
 
         <div class="mode-switch">
             <div class="mode-option">
-                <input type="radio" id="mode-weekday" name="mode" value="weekday" checked>
-                <label class="mode-label" for="mode-weekday">
-                    <span class="mode-emoji">💼</span>
-                    <span>工作日</span>
+                <label class="mode-label" for="date-picker" style="padding: 12px 20px;">
+                    <span class="mode-emoji">📅</span>
+                    <span>选择约会日期</span>
                 </label>
             </div>
             <div class="mode-option">
-                <input type="radio" id="mode-weekend" name="mode" value="weekend">
-                <label class="mode-label" for="mode-weekend">
-                    <span class="mode-emoji">🌈</span>
-                    <span>周末</span>
-                </label>
+                <select id="date-picker">
+                    <!-- 日期选项由JS动态生成 -->
+                </select>
             </div>
         </div>
 
         <div class="mode-hint" id="mode-hint">
-            工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单&穿搭不限）
+            请选择一个约会日期，系统会自动判断工作日或周末模式 💕
         </div>
 
         <div class="category-card" data-category="food">
@@ -1069,7 +1084,6 @@
             <div class="options-grid" id="intimate-options"></div>
         </div>
 
-        <!-- 新增：约会穿搭 -->
         <div class="category-card" data-category="outfit">
             <div class="category-header">
                 <span class="category-icon">👗</span>
@@ -1151,7 +1165,6 @@
                             <div class="timeline" id="ticket-timeline"></div>
                         </div>
                         
-                        <!-- 新增：OOTD 穿搭区域 -->
                         <div class="ticket-ootd" id="ticket-ootd" style="display: none;">
                             <div class="ootd-title">
                                 <span>👗</span>
@@ -1316,10 +1329,11 @@
         let currentMode = 'weekday';
         const selectedItems = new Set();
 
-        const modeInputs = document.querySelectorAll('input[name="mode"]');
+        const datePicker = document.getElementById('date-picker');
         const modeHint = document.getElementById('mode-hint');
         const btnClear = document.getElementById('btn-clear');
         const btnGenerate = document.getElementById('btn-generate');
+
         const ticketSection = document.getElementById('ticket-section');
         const shareBar = document.getElementById('share-bar');
         const toastOverlay = document.getElementById('toast-overlay');
@@ -1455,19 +1469,72 @@
         }
 
         function updateModeHint() {
-            if (currentMode === 'weekday') {
-                modeHint.innerHTML = '工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单&穿搭不限）';
+            const selectedDate = new Date(datePicker.value);
+            const dayOfWeek = selectedDate.getDay();
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+            const weekDayNames = ['周日','周一','周二','周三','周四','周五','周六'];
+            const weekDayName = weekDayNames[dayOfWeek];
+            
+            if (isWeekend) {
+                modeHint.innerHTML = `<span class="highlight">${weekDayName}</span> 周末模式：自由搭配，想选多少选多少！🌈 <span class="highlight">尽情享受吧</span>`;
             } else {
-                modeHint.innerHTML = '周末模式：自由搭配，想选多少选多少！🌈 <span class="highlight">尽情享受吧</span>';
+                modeHint.innerHTML = `<span class="highlight">${weekDayName}</span> 工作日模式：需要选 <span class="highlight">1个</span> 吃饭项目 + <span class="highlight">1-3个</span> 其他活动（隐藏菜单&穿搭不限）`;
             }
         }
 
-        modeInputs.forEach(input => {
-            input.addEventListener('change', (e) => {
-                currentMode = e.target.value;
-                updateModeHint();
-                updateWeekdayLimit();
-            });
+        // 初始化日期选择器
+        function initDatePicker() {
+            const today = new Date();
+            const select = datePicker;
+            select.innerHTML = '';
+            
+            for (let i = 0; i <= 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateValue = `${year}-${month}-${day}`;
+                
+                const weekDays = ['周日','周一','周二','周三','周四','周五','周六'];
+                const weekDay = weekDays[date.getDay()];
+                
+                let label = '';
+                if (i === 0) {
+                    label = `今天 (${month}/${day} ${weekDay})`;
+                } else if (i === 1) {
+                    label = `明天 (${month}/${day} ${weekDay})`;
+                } else if (i === 2) {
+                    label = `后天 (${month}/${day} ${weekDay})`;
+                } else {
+                    label = `${month}/${day} ${weekDay}`;
+                }
+                
+                const option = document.createElement('option');
+                option.value = dateValue;
+                option.textContent = label;
+                select.appendChild(option);
+            }
+            
+            // 默认选中今天
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            select.value = todayStr;
+            
+            // 根据日期自动判断模式
+            updateModeFromDate();
+        }
+        
+        function updateModeFromDate() {
+            const selectedDate = new Date(datePicker.value);
+            const dayOfWeek = selectedDate.getDay();
+            currentMode = (dayOfWeek === 0 || dayOfWeek === 6) ? 'weekend' : 'weekday';
+            updateModeHint();
+            updateWeekdayLimit();
+        }
+        
+        datePicker.addEventListener('change', () => {
+            updateModeFromDate();
         });
 
         function updateWeekdayLimit() {
@@ -1596,8 +1663,8 @@
             const paidItems = selected.filter(s => s.category !== 'outfit');
             const total = paidItems.length * 10;
 
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+            const selectedDate = new Date(datePicker.value);
+            const dateStr = `${selectedDate.getFullYear()}.${String(selectedDate.getMonth() + 1).padStart(2, '0')}.${String(selectedDate.getDate()).padStart(2, '0')}`;
             document.getElementById('ticket-date').textContent = dateStr;
 
             document.getElementById('ticket-mode').textContent = currentMode === 'weekday' ? '工作日模式（晚上）' : '周末模式（全天）';
@@ -1721,7 +1788,7 @@
         function updateShareUrl() {
             const selected = getAllSelected();
             const params = new URLSearchParams();
-            params.set('mode', currentMode);
+            params.set('date', datePicker.value);
             params.set('items', selected.map(s => s.id).join(','));
             
             const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
@@ -1731,7 +1798,7 @@
         btnCopyLink.addEventListener('click', () => {
             const selected = getAllSelected();
             const params = new URLSearchParams();
-            params.set('mode', currentMode);
+            params.set('date', datePicker.value);
             params.set('items', selected.map(s => s.id).join(','));
             
             const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
@@ -1784,19 +1851,15 @@
 
         function loadFromUrl() {
             const params = new URLSearchParams(window.location.search);
-            const mode = params.get('mode');
+            const date = params.get('date');
             const items = params.get('items');
             
-            if (mode && items) {
-                if (mode === 'weekend') {
-                    document.getElementById('mode-weekend').checked = true;
-                    currentMode = 'weekend';
-                } else {
-                    document.getElementById('mode-weekday').checked = true;
-                    currentMode = 'weekday';
-                }
-                updateModeHint();
-                
+            if (date) {
+                datePicker.value = date;
+                updateModeFromDate();
+            }
+            
+            if (items) {
                 const itemIds = items.split(',');
                 itemIds.forEach(id => {
                     const checkbox = document.getElementById(id);
@@ -1890,7 +1953,7 @@
         animate();
 
         renderOptions();
-        updateModeHint();
+        initDatePicker();
         
         window.addEventListener('load', loadFromUrl);
     </script>
